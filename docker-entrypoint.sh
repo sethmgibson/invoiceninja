@@ -193,28 +193,41 @@ if [ -n "$SUPERVISOR_CONF" ]; then
             # Create a wrapper script to wait for PHP-FPM
             cat > /usr/local/bin/nginx-wait-start.sh <<'NGINX_WAIT_EOF'
 #!/bin/sh
-# Wait for PHP-FPM to be ready (max 30 seconds)
-for i in $(seq 1 30); do
-    # Try to check if port 9000 is listening using /proc/net/tcp or telnet fallback
-    if grep -q ":2328" /proc/net/tcp 2>/dev/null || \
-       [ -S /var/run/php-fpm/php-fpm.sock ] || \
-       [ -S /var/run/php/php-fpm.sock ] || \
-       [ -S /run/php/php-fpm.sock ] || \
-       [ -S /run/php-fpm/www.sock ]; then
-        echo "PHP-FPM is ready, starting nginx"
-        break
-    fi
-    echo "Waiting for PHP-FPM... ($i/30)"
-    sleep 1
-done
+# Wait for PHP-FPM to start (supervisor starts it with lower priority)
+echo "Waiting 3 seconds for PHP-FPM to initialize..."
+sleep 3
 
 # Test nginx configuration
 echo "Testing nginx configuration..."
-nginx -t -c /etc/nginx/nginx.conf 2>&1
+if ! nginx -t -c /etc/nginx/nginx.conf 2>&1; then
+    echo "ERROR: nginx configuration test failed!"
+    cat /etc/nginx/nginx.conf
+    exit 1
+fi
 
 # Start nginx with verbose error logging
-echo "Starting nginx..."
-exec nginx -g 'daemon off;' -c /etc/nginx/nginx.conf 2>&1
+HTTP_PORT=${PORT:-80}
+echo "Starting nginx on port $HTTP_PORT..."
+echo "Nginx will proxy PHP requests to 127.0.0.1:9000"
+
+# Start nginx in background briefly to check if it binds
+nginx -c /etc/nginx/nginx.conf
+sleep 1
+
+# Check if nginx is actually listening
+if netstat -tlnp 2>/dev/null | grep -q ":$HTTP_PORT " || ss -tlnp 2>/dev/null | grep -q ":$HTTP_PORT "; then
+    echo "✓ Nginx successfully listening on port $HTTP_PORT"
+    # Stop it and restart in foreground
+    nginx -s stop 2>/dev/null
+    sleep 1
+else
+    echo "WARNING: Could not verify nginx is listening on port $HTTP_PORT"
+    nginx -s stop 2>/dev/null
+    sleep 1
+fi
+
+# Now run nginx in foreground
+exec nginx -g 'daemon off;' -c /etc/nginx/nginx.conf
 NGINX_WAIT_EOF
             chmod +x /usr/local/bin/nginx-wait-start.sh
             
