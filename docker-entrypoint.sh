@@ -1,6 +1,20 @@
 #!/bin/sh
 set -e
 
+# Ensure .env file exists (required for Laravel to start)
+if [ ! -f /var/www/app/.env ]; then
+    if [ -f /var/www/app/.env.example ]; then
+        echo "Creating .env from .env.example..."
+        cp /var/www/app/.env.example /var/www/app/.env
+        echo "✓ .env file created"
+    else
+        echo "ERROR: Neither .env nor .env.example found!"
+        exit 1
+    fi
+else
+    echo "✓ .env file already exists"
+fi
+
 # Mount target used on Railway
 STOR="/var/www/app/storage"
 
