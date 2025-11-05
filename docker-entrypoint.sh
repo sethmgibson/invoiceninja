@@ -22,27 +22,21 @@ mkdir -p "$STOR/logs" \
 # Link public/storage → storage/app/public (safe if already exists)
 php artisan storage:link || true
 
-# Find and start the appropriate web server + PHP-FPM
-# Try different possible server configurations
-if command -v apache2-foreground >/dev/null 2>&1; then
-    # Apache setup (common in Invoice Ninja images)
-    exec apache2-foreground
-elif [ -x /usr/sbin/nginx ]; then
-    # Nginx with full path
-    php-fpm -D
-    exec /usr/sbin/nginx -g 'daemon off;'
-elif [ -x /usr/bin/supervisord ]; then
-    # Try to find supervisor config and use it
-    for conf in /etc/supervisord.conf /etc/supervisor/supervisord.conf /etc/supervisord/supervisord.conf; do
-        if [ -f "$conf" ]; then
-            exec /usr/bin/supervisord -n -c "$conf"
-        fi
-    done
-    # If no config found, try without explicit config
-    exec /usr/bin/supervisord -n
-else
-    # Fallback: start PHP-FPM only and hope for the best
-    echo "WARNING: Could not find web server. Starting PHP-FPM only."
-    exec php-fpm -F
+# Start nginx in the background (it will proxy to PHP-FPM that supervisor starts)
+if [ -x /usr/sbin/nginx ]; then
+    /usr/sbin/nginx
+elif command -v nginx >/dev/null 2>&1; then
+    nginx
 fi
+
+# Now start supervisor which will manage PHP-FPM and queue workers
+# Try to find supervisor config and use it
+for conf in /etc/supervisord.conf /etc/supervisor/supervisord.conf /etc/supervisord/supervisord.conf; do
+    if [ -f "$conf" ]; then
+        exec /usr/bin/supervisord -n -c "$conf"
+    fi
+done
+
+# If no config found, try without explicit config
+exec /usr/bin/supervisord -n
 
