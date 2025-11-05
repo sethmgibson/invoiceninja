@@ -4,7 +4,7 @@ FROM invoiceninja/invoiceninja:5
 # Ensure we run as root so we can fix volume permissions at boot
 USER root
 
-# entrypoint to fix storage perms, then start supervisor (nginx+php-fpm)
+# entrypoint to fix storage perms, then start services
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 

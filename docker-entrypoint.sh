@@ -22,6 +22,9 @@ mkdir -p "$STOR/logs" \
 # Link public/storage → storage/app/public (safe if already exists)
 php artisan storage:link || true
 
-# Hand off to the image's supervisor (foreground)
-exec /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf
+# Start PHP-FPM in the background
+php-fpm -D
+
+# Start Nginx in the foreground
+exec nginx -g 'daemon off;'
 
