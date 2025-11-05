@@ -15,6 +15,23 @@ else
     echo "✓ .env file already exists"
 fi
 
+# Ensure .env file is writable by the web server
+echo "Setting permissions on .env file..."
+if chown www-data:www-data /var/www/app/.env 2>/dev/null; then
+    echo "✓ Set .env ownership to www-data:www-data"
+    chmod 664 /var/www/app/.env
+elif chown nginx:nginx /var/www/app/.env 2>/dev/null; then
+    echo "✓ Set .env ownership to nginx:nginx"
+    chmod 664 /var/www/app/.env
+elif chown 1000:1000 /var/www/app/.env 2>/dev/null; then
+    echo "✓ Set .env ownership to 1000:1000"
+    chmod 664 /var/www/app/.env
+else
+    # If chown fails, make it world-writable as fallback
+    echo "WARNING: chown failed, making .env world-writable as fallback"
+    chmod 666 /var/www/app/.env
+fi
+
 # Mount target used on Railway
 STOR="/var/www/app/storage"
 
