@@ -46,6 +46,29 @@ else
     echo "Using PHP-FPM TCP: 127.0.0.1:9000"
 fi
 
+# Check if mime.types exists, if not create a minimal one
+if [ ! -f /etc/nginx/mime.types ]; then
+    echo "Creating /etc/nginx/mime.types..."
+    cat > /etc/nginx/mime.types <<'MIME_EOF'
+types {
+    text/html                             html htm shtml;
+    text/css                              css;
+    text/xml                              xml;
+    image/gif                             gif;
+    image/jpeg                            jpeg jpg;
+    image/png                             png;
+    image/svg+xml                         svg svgz;
+    image/x-icon                          ico;
+    application/javascript                js;
+    application/json                      json;
+    application/pdf                       pdf;
+    application/zip                       zip;
+    font/woff                             woff;
+    font/woff2                            woff2;
+}
+MIME_EOF
+fi
+
 # Create a minimal nginx configuration for Railway
 cat > /etc/nginx/nginx.conf <<EOF
 worker_processes 1;
@@ -73,6 +96,13 @@ http {
         root /var/www/app/public;
         index index.php index.html;
         
+        # Health check endpoint (no PHP required)
+        location = /health {
+            access_log off;
+            return 200 "nginx is running\n";
+            add_header Content-Type text/plain;
+        }
+        
         location / {
             try_files \$uri \$uri/ /index.php?\$query_string;
         }
@@ -83,6 +113,7 @@ http {
             fastcgi_index index.php;
             fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
             fastcgi_param PATH_INFO \$fastcgi_path_info;
+            fastcgi_param REDIRECT_STATUS 200;
             include fastcgi_params;
         }
         
@@ -94,6 +125,17 @@ http {
 EOF
 
 echo "Nginx will listen on port: $HTTP_PORT"
+
+# Verify public directory and index.php exist
+if [ ! -d /var/www/app/public ]; then
+    echo "ERROR: /var/www/app/public directory not found!"
+    ls -la /var/www/app/
+elif [ ! -f /var/www/app/public/index.php ]; then
+    echo "ERROR: /var/www/app/public/index.php not found!"
+    ls -la /var/www/app/public/
+else
+    echo "✓ Found /var/www/app/public/index.php"
+fi
 
 # Create fastcgi_params if it doesn't exist
 if [ ! -f /etc/nginx/fastcgi_params ]; then
@@ -153,7 +195,8 @@ if [ -n "$SUPERVISOR_CONF" ]; then
 #!/bin/sh
 # Wait for PHP-FPM to be ready (max 30 seconds)
 for i in $(seq 1 30); do
-    if nc -z 127.0.0.1 9000 2>/dev/null || \
+    # Try to check if port 9000 is listening using /proc/net/tcp or telnet fallback
+    if grep -q ":2328" /proc/net/tcp 2>/dev/null || \
        [ -S /var/run/php-fpm/php-fpm.sock ] || \
        [ -S /var/run/php/php-fpm.sock ] || \
        [ -S /run/php/php-fpm.sock ] || \
@@ -165,8 +208,13 @@ for i in $(seq 1 30); do
     sleep 1
 done
 
-# Start nginx
-exec nginx -g 'daemon off;' -c /etc/nginx/nginx.conf
+# Test nginx configuration
+echo "Testing nginx configuration..."
+nginx -t -c /etc/nginx/nginx.conf 2>&1
+
+# Start nginx with verbose error logging
+echo "Starting nginx..."
+exec nginx -g 'daemon off;' -c /etc/nginx/nginx.conf 2>&1
 NGINX_WAIT_EOF
             chmod +x /usr/local/bin/nginx-wait-start.sh
             
