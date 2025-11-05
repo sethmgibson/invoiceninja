@@ -7,17 +7,33 @@ STOR="/var/www/app/storage"
 # Ensure the mount root exists and is writable (volume may be empty)
 mkdir -p "$STOR"
 
-# Take ownership of the volume so app user can write (try common users, fallback)
-chown -R www-data:www-data "$STOR" 2>/dev/null || \
-chown -R nginx:nginx       "$STOR" 2>/dev/null || \
-chown -R 1000:1000         "$STOR" 2>/dev/null || true
-
 # Create expected subdirs (idempotent)
 mkdir -p "$STOR/logs" \
          "$STOR/framework/cache" \
          "$STOR/framework/sessions" \
          "$STOR/framework/views" \
          "$STOR/app/public"
+
+# Take ownership of the volume so app user can write
+# Railway volumes are mounted as root, so we need to fix permissions
+echo "Setting permissions on storage directory..."
+if chown -R www-data:www-data "$STOR" 2>/dev/null; then
+    echo "✓ Set ownership to www-data:www-data"
+    chmod -R 775 "$STOR"
+elif chown -R nginx:nginx "$STOR" 2>/dev/null; then
+    echo "✓ Set ownership to nginx:nginx"
+    chmod -R 775 "$STOR"
+elif chown -R 1000:1000 "$STOR" 2>/dev/null; then
+    echo "✓ Set ownership to 1000:1000"
+    chmod -R 775 "$STOR"
+else
+    # If chown fails, try chmod as fallback (we're running as root)
+    echo "WARNING: chown failed, attempting chmod 777 as fallback"
+    chmod -R 777 "$STOR"
+fi
+
+# Verify permissions
+ls -la "$STOR" | head -5
 
 # Link public/storage → storage/app/public (safe if already exists)
 php artisan storage:link || true
