@@ -1,12 +1,14 @@
-# Use the official Invoice Ninja image (includes PHP, Nginx, Supervisor, cron)
+# Dockerfile
 FROM invoiceninja/invoiceninja:5
 
-# Optional: if you'll customize templates, languages, designs, etc, copy only what you change:
-# COPY ./resources/lang /var/www/app/resources/lang
-# COPY ./resources/views /var/www/app/resources/views
+# Ensure we run as root so we can fix volume permissions at boot
+USER root
 
-# Expose the web port the base image serves on
+# entrypoint to fix storage perms, then start supervisor (nginx+php-fpm)
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# The base image already exposes/serves on 9000
 EXPOSE 9000
 
-# The base image already runs nginx+php-fpm+cron via supervisord
-
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
