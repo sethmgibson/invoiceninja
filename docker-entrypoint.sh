@@ -66,8 +66,47 @@ fi
 # Verify permissions
 ls -la "$STOR" | head -5
 
+# Clear all caches to prevent stale config/views (fixes template null errors)
+echo "Clearing Laravel caches..."
+php artisan config:clear || true
+php artisan cache:clear || true
+php artisan view:clear || true
+php artisan route:clear || true
+echo "✓ Caches cleared"
+
 # Link public/storage → storage/app/public (safe if already exists)
+echo "Creating storage symlink..."
+# Remove existing symlink if it exists and is broken
+if [ -L /var/www/app/public/storage ] && [ ! -e /var/www/app/public/storage ]; then
+    echo "Removing broken symlink..."
+    rm -f /var/www/app/public/storage
+fi
+
 php artisan storage:link || true
+
+# Verify the symlink actually works
+if [ -L /var/www/app/public/storage ]; then
+    LINK_TARGET=$(readlink /var/www/app/public/storage)
+    echo "✓ Symlink exists: public/storage -> $LINK_TARGET"
+    if [ -d /var/www/app/public/storage ]; then
+        echo "✓ Symlink target is accessible"
+    else
+        echo "WARNING: Symlink target is not accessible"
+    fi
+else
+    echo "WARNING: public/storage symlink was not created"
+fi
+
+# Create a test health file to verify storage is working
+echo "Storage is healthy and accessible" > "$STOR/app/public/health.txt"
+chmod 644 "$STOR/app/public/health.txt"
+echo "✓ Created health.txt test file"
+
+# Rebuild optimized caches for production (after clearing stale ones)
+# This ensures configs are fresh and template variables resolve correctly
+echo "Rebuilding optimized caches..."
+php artisan config:cache || true
+echo "✓ Config cache rebuilt"
 
 # Use Railway's PORT environment variable, default to 80
 HTTP_PORT=${PORT:-80}
@@ -143,11 +182,36 @@ http {
         root /var/www/app/public;
         index index.php index.html;
         
+        # Disable directory listing globally
+        autoindex off;
+        
+        # Increase buffer sizes to handle large responses (fixes buffered warnings)
+        fastcgi_buffers 16 16k;
+        fastcgi_buffer_size 32k;
+        client_body_buffer_size 128k;
+        
         # Health check endpoint (no PHP required)
         location = /health {
             access_log off;
             return 200 "nginx is running\n";
             add_header Content-Type text/plain;
+        }
+        
+        # Explicit handling for /storage/ URLs (uploaded files, logos, etc.)
+        # This prevents "directory index forbidden" errors
+        location /storage/ {
+            alias /var/www/app/storage/app/public/;
+            autoindex off;
+            expires 30d;
+            add_header Cache-Control "public, immutable";
+            
+            # Ensure files are served directly
+            try_files \$uri =404;
+            
+            # Security: prevent execution of PHP files
+            location ~ \.php\$ {
+                deny all;
+            }
         }
         
         location / {
@@ -162,10 +226,17 @@ http {
             fastcgi_param PATH_INFO \$fastcgi_path_info;
             fastcgi_param REDIRECT_STATUS 200;
             include fastcgi_params;
+            
+            # Increase timeouts for long-running requests
+            fastcgi_read_timeout 300;
+            fastcgi_send_timeout 300;
         }
         
-        location ~ /\.ht {
+        # Security: deny access to hidden files
+        location ~ /\. {
             deny all;
+            access_log off;
+            log_not_found off;
         }
     }
 }
