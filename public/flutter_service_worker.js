@@ -4,7 +4,7 @@ const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
 
 const RESOURCES = {"flutter.js": "c71a09214cb6f5f8996a531350400a9a",
-"favicon.png": "dca91c54388f52eded692718d5a98b8b",
+"aevumvector_favicon_transparent.png": "08d8f51463ac49daa432123210b430ea",
 "icons/Icon-512.png": "0f9aff01367f0a0c69773d25ca16ef35",
 "icons/Icon-192.png": "bb1cf5f6982006952211c7c8404ffbed",
 "manifest.json": "ef43d90e57aa7682d7e2cfba2f484a40",
@@ -19,7 +19,6 @@ const RESOURCES = {"flutter.js": "c71a09214cb6f5f8996a531350400a9a",
 "canvaskit/skwasm.js.symbols": "741d50ffba71f89345996b0aa8426af8",
 "canvaskit/canvaskit.wasm": "3d2a2d663e8c5111ac61a46367f751ac",
 "canvaskit/canvaskit.js.symbols": "38cba9233b92472a36ff011dc21c2c9f",
-"favicon.ico": "51636d3a390451561744c42188ccd628",
 "main.dart.js": "72678a34bef433f4960eeebf32b95211",
 "/": "f3d1ab9849dd90a5d9aa3c8b3992c365",
 "assets/packages/material_design_icons_flutter/lib/fonts/materialdesignicons-webfont.ttf": "3759b2f7a51e83c64a58cfe07b96a8ee",

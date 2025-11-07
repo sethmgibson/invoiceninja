@@ -82,7 +82,7 @@
         @vite('resources/sass/app.scss')
 
         @if(auth()->guard('vendor')->user() && !auth()->guard('vendor')->user()->user->account->isPaid())
-            <link href="{{ asset('favicon.png') }}" rel="shortcut icon" type="image/png">
+            <link href="{{ asset('aevumvector_favicon_transparent.png') }}" rel="shortcut icon" type="image/png">
         @endif
 
         <link rel="canonical" href="{{ config('ninja.site_url') }}/{{ request()->path() }}"/>
