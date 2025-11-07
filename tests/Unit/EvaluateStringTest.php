@@ -21,7 +21,7 @@ class EvaluateStringTest extends TestCase
 {
     public function testNumericCleanup()
     {
-        $string = '13/favicon.ico';
+        $string = '13/aevumvector_favicon_transparent.png';
 
         $number = preg_replace('~\D~', '', $string);
 

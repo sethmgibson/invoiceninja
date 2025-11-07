@@ -1,4 +1,4 @@
-@component('email.template.admin', ['settings' => $settings, 'logo' => $logo ?? 'https://pdf.invoicing.co/favicon-v2.png'])
+@component('email.template.admin', ['settings' => $settings, 'logo' => $logo ?? config('ninja.app_url') . '/aevumvector_favicon_transparent.png'])
     {{-- Body --}}
     {!! $support_message !!}
 

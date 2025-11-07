@@ -45,7 +45,7 @@ class ChartCurrencyTest extends TestCase
 
         $settings = CompanySettings::defaults();
 
-        $settings->company_logo = 'https://pdf.invoicing.co/favicon-v2.png';
+        $settings->company_logo = config('ninja.app_url') . '/aevumvector_favicon_transparent.png';;
         $settings->website = 'www.invoiceninja.com';
         $settings->address1 = 'Address 1';
         $settings->address2 = 'Address 2';
@@ -172,7 +172,7 @@ class ChartCurrencyTest extends TestCase
 
         $settings = CompanySettings::defaults();
 
-        $settings->company_logo = 'https://pdf.invoicing.co/favicon-v2.png';
+        $settings->company_logo = config('ninja.app_url') . '/aevumvector_favicon_transparent.png';;
         $settings->website = 'www.invoiceninja.com';
         $settings->address1 = 'Address 1';
         $settings->address2 = 'Address 2';
@@ -300,7 +300,7 @@ class ChartCurrencyTest extends TestCase
 
         $settings = CompanySettings::defaults();
 
-        $settings->company_logo = 'https://pdf.invoicing.co/favicon-v2.png';
+        $settings->company_logo = config('ninja.app_url') . '/aevumvector_favicon_transparent.png';;
         $settings->website = 'www.invoiceninja.com';
         $settings->address1 = 'Address 1';
         $settings->address2 = 'Address 2';

@@ -1,4 +1,4 @@
-@component('email.template.admin', ['logo' => 'https://pdf.invoicing.co/favicon-v2.png'])
+@component('email.template.admin', ['logo' => config('ninja.app_url') . '/aevumvector_favicon_transparent.png'])
     <div class="center">
         <h1>{{ ctrans('texts.notification_credits_low') }}</h1>
         <p>{{ ctrans('texts.notification_credits_low_text') }}</p>

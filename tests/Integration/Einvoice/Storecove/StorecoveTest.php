@@ -1010,7 +1010,7 @@ $this->assertTrue(in_array($item->tax_id, ['1','2']));
         $this->routing_id = 294636;
 
         $settings = CompanySettings::defaults();
-        $settings->company_logo = 'https://pdf.invoicing.co/favicon-v2.png';
+        $settings->company_logo = config('ninja.app_url') . '/aevumvector_favicon_transparent.png';;
         $settings->website = 'www.invoiceninja.it';
         $settings->address1 = 'Via del Corso, 28';
         $settings->address2 = 'Palazzo delle Telecomunicazioni';
@@ -1173,7 +1173,7 @@ $this->assertTrue(in_array($item->tax_id, ['1','2']));
 
         $settings = CompanySettings::defaults();
 
-        $settings->company_logo = 'https://pdf.invoicing.co/favicon-v2.png';
+        $settings->company_logo = config('ninja.app_url') . '/aevumvector_favicon_transparent.png';;
         $settings->website = 'www.invoiceninja.de';
         $settings->address1 = 'Musterstraße 12';
         $settings->address2 = 'Gebäude B';
@@ -1281,7 +1281,7 @@ $this->assertTrue(in_array($item->tax_id, ['1','2']));
         $this->routing_id = 293098;
 
         $settings = CompanySettings::defaults();
-        $settings->company_logo = 'https://pdf.invoicing.co/favicon-v2.png';
+        $settings->company_logo = config('ninja.app_url') . '/aevumvector_favicon_transparent.png';;
         $settings->website = 'www.invoiceninja.de';
         $settings->address1 = 'Calle Gran Vía, 28';
         $settings->address2 = 'Edificio Telefónica';
@@ -1388,7 +1388,7 @@ $this->assertTrue(in_array($item->tax_id, ['1','2']));
         $this->routing_id = 293338;
 
         $settings = CompanySettings::defaults();
-        $settings->company_logo = 'https://pdf.invoicing.co/favicon-v2.png';
+        $settings->company_logo = config('ninja.app_url') . '/aevumvector_favicon_transparent.png';;
         $settings->website = 'www.invoiceninja.de';
 
         $settings->address1 = '10 Rue de la Paix';
@@ -1500,7 +1500,7 @@ $this->assertTrue(in_array($item->tax_id, ['1','2']));
         $this->routing_id = 293801;
 
         $settings = CompanySettings::defaults();
-        $settings->company_logo = 'https://pdf.invoicing.co/favicon-v2.png';
+        $settings->company_logo = config('ninja.app_url') . '/aevumvector_favicon_transparent.png';;
         $settings->website = 'www.invoiceninja.at';
         $settings->address1 = 'Musterstraße 1';
         $settings->address2 = 'Stockwerk 2, Büro 3';
@@ -1609,7 +1609,7 @@ $this->assertTrue(in_array($item->tax_id, ['1','2']));
         $this->routing_id = 294639;
 
         $settings = CompanySettings::defaults();
-        $settings->company_logo = 'https://pdf.invoicing.co/favicon-v2.png';
+        $settings->company_logo = config('ninja.app_url') . '/aevumvector_favicon_transparent.png';;
         $settings->website = 'www.invoiceninja.ro';
         $settings->address1 = 'Strada Exemplu, 28';
         $settings->address2 = 'Clădirea Exemplu';
